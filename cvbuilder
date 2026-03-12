@@ -1,0 +1,823 @@
+import React, { useState } from 'react';
+import { Plus, Trash2, Printer, Edit3, Settings, Palette, Type, Minus, Maximize } from 'lucide-react';
+
+// CV'nin başlangıç verileri
+const initialData = {
+  name: "BAŞAR ÜNDER",
+  leftTitle: "TEACHER",
+  summary: "Dedicated and forward-thinking Audio Professional and Lecturer with over 15 years of experience in film scoring, sound design, and game audio. Committed to bridging the gap between industry-standard production and academic excellence by fostering an engaging, project-based learning environment. Leveraging a deep background in experimental electronic music and international industry networks, I aim to inspire the next generation of creative engineers at SAE Berlin through innovative curriculum development and hands-on mentorship.",
+  education: [
+    "2006 - 2010 Master of Arts in Music (Sound Engineering), Istanbul Technical University",
+    "2002 - 2006 Bachelor of Arts in Sociology, Istanbul University"
+  ],
+  skills: [
+    "Strong knowledge of modern audio production curricula.",
+    "Excellent skills in managing high-end studio environments and technical workflows.",
+    "Proven ability to create a professional, creative, and inclusive learning environment."
+  ],
+  affiliations: [
+    "European Film Academy (EFA): Member & Excellence Awards Jury Member.",
+    "International Game Developers Association (IGDA): Professional Member specializing in Game Audio and immersive sound design."
+  ],
+  midTitle: "EXPERIENCE",
+  experiences: [
+    {
+      date: "2018 - Present",
+      company: "BAHÇEŞEHİR UNIVERSITY - ISTANBUL AUDIO COURSES",
+      items: [
+        "**Cross-Departmental Instruction:** Delivering specialized audio courses across Digital Game Design, VCD, Film & TV, and Cartoon & Animation departments.",
+        "**Curriculum Design:** Developed and taught Game Audio, Advanced Game Sound, Internet Audio, and Audio Production.",
+        "**Core Technical Focus:** Expert instruction in Film Sound, focusing on the professional integration of Dialogue, Music, and Sound Effects.",
+        "**Studio-Based Mentorship:** Supervising high-end audio post-production and game implementation projects, ensuring students meet international industry standards in DAW proficiency, middleware, and immersive sound design.",
+        "**Student Assessment:** Providing project-based feedback and industry-standard technical guidance to prepare students for global careers in creative industries."
+      ]
+    }
+  ],
+  interests: [
+    "Creative Coding",
+    "Reading"
+  ],
+  contact: {
+    phone: "+905054647740",
+    email: "contact@basarunder.net",
+    website: "www.basarunder.net"
+  }
+};
+
+const THEMES = {
+  mint: { name: "Mint", bg: "#dbeae6", border: "#2a3330" },
+  paper: { name: "Parchment", bg: "#fdf6e3", border: "#33271f" },
+  monochrome: { name: "Monochrome", bg: "#ffffff", border: "#000000" },
+  concrete: { name: "Concrete", bg: "#d4d4d4", border: "#171717" },
+  blueprint: { name: "Blueprint", bg: "#1e3a8a", border: "#ffffff" }
+};
+
+const FONTS = {
+  'space-mono': { name: 'Space Mono', family: "'Space Mono', monospace" },
+  'ibm-plex': { name: 'IBM Plex Mono', family: "'IBM Plex Mono', monospace" },
+  'jetbrains': { name: 'JetBrains Mono', family: "'JetBrains Mono', monospace" },
+  'anonymous-pro': { name: 'Anonymous Pro', family: "'Anonymous Pro', monospace" },
+  'courier-prime': { name: 'Courier Prime', family: "'Courier Prime', monospace" }
+};
+
+const BORDERS = {
+  'solid': { name: 'Düz (Solid)', value: 'solid', width: '1.5px' },
+  'dashed': { name: 'Kesik (Dashed)', value: 'dashed', width: '2px' },
+  'dotted': { name: 'Noktalı (Dotted)', value: 'dotted', width: '2.5px' },
+  'double': { name: 'Çift (Double)', value: 'double', width: '4px' },
+  'groove': { name: 'Oluklu (Groove)', value: 'groove', width: '3px' }
+};
+
+// YENİ EKLENEN BOYUT VE SIĞDIRMA AYARLARI
+const TEXT_SIZES = {
+  sm: { name: 'Küçük', text: '10.5px', h2: '13px', h1: '20px', title: '12px' },
+  md: { name: 'Normal', text: '11.5px', h2: '14px', h1: '24px', title: '14px' },
+  lg: { name: 'Büyük', text: '12.5px', h2: '15px', h1: '28px', title: '16px' }
+};
+
+const SPACING = {
+  compact: { name: 'Dar (Kompakt)', cell: '16px 20px', header: '20px 10px', footer: '16px 20px', wrapper: '20px' },
+  normal: { name: 'Geniş (Ferah)', cell: '24px 30px', header: '30px 20px', footer: '24px 20px 30px 20px', wrapper: '40px' }
+};
+
+export default function App() {
+  const [data, setData] = useState(initialData);
+  const [activeTheme, setActiveTheme] = useState('mint');
+  const [activeFont, setActiveFont] = useState('space-mono');
+  const [activeBorderStyle, setActiveBorderStyle] = useState('solid');
+  const [activeSize, setActiveSize] = useState('md');
+  const [activeSpacing, setActiveSpacing] = useState('normal');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  // --- VERİ GÜNCELLEME FONKSİYONLARI ---
+  const handleChange = (field, value) => setData({ ...data, [field]: value });
+  const handleNestedChange = (parent, field, value) => setData({ ...data, [parent]: { ...data[parent], [field]: value } });
+  
+  const handleArrayChange = (field, index, value) => {
+    const newArray = [...data[field]];
+    newArray[index] = value;
+    setData({ ...data, [field]: newArray });
+  };
+  const addToArray = (field, defaultValue = "") => setData({ ...data, [field]: [...data[field], defaultValue] });
+  const removeFromArray = (field, index) => setData({ ...data, [field]: data[field].filter((_, i) => i !== index) });
+
+  const handleExpChange = (expIndex, field, value) => {
+    const newExps = [...data.experiences];
+    newExps[expIndex][field] = value;
+    setData({ ...data, experiences: newExps });
+  };
+  const handleExpItemChange = (expIndex, itemIndex, value) => {
+    const newExps = [...data.experiences];
+    newExps[expIndex].items[itemIndex] = value;
+    setData({ ...data, experiences: newExps });
+  };
+  const addExpItem = (expIndex) => {
+    const newExps = [...data.experiences];
+    newExps[expIndex].items.push("");
+    setData({ ...data, experiences: newExps });
+  };
+  const removeExpItem = (expIndex, itemIndex) => {
+    const newExps = [...data.experiences];
+    newExps[expIndex].items = newExps[expIndex].items.filter((_, i) => i !== itemIndex);
+    setData({ ...data, experiences: newExps });
+  };
+  const addExperienceBlock = () => setData({ ...data, experiences: [...data.experiences, { date: "", company: "", items: [""] }] });
+  const removeExperienceBlock = (expIndex) => setData({ ...data, experiences: data.experiences.filter((_, i) => i !== expIndex) });
+
+  // --- PDF İNDİRME FONKSİYONU ---
+  const handleDownloadPdf = async () => {
+    setIsGeneratingPdf(true);
+    
+    try {
+      await document.fonts.ready;
+
+      if (!window.html2canvas) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        document.body.appendChild(script);
+        await new Promise((resolve) => { script.onload = resolve; });
+      }
+      if (!window.jspdf) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        document.body.appendChild(script);
+        await new Promise((resolve) => { script.onload = resolve; });
+      }
+
+      const currentScroll = window.scrollY;
+      window.scrollTo(0, 0);
+
+      const element = document.getElementById('pdf-content');
+
+      const canvas = await window.html2canvas(element, {
+        scale: 2, 
+        useCORS: true,
+        logging: false,
+        width: 794,
+        height: 1123,
+        windowWidth: 794,
+        windowHeight: 1123
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const { jsPDF } = window.jspdf;
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4' 
+      });
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+      pdf.save(`${data.name.replace(/\s+/g, '_')}_CV.pdf`);
+
+      window.scrollTo(0, currentScroll);
+
+    } catch (error) {
+      console.error("PDF oluşturulurken hata oluştu:", error);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  // --- ÖZEL METİN PARÇALAYICI ---
+  const renderFormattedText = (text) => {
+    if (!text) return null;
+    const parts = text.split(/\*\*(.*?)\*\*/g);
+    return parts.map((part, index) => 
+      index % 2 === 1 ? <strong key={index}>{part}</strong> : part
+    );
+  };
+
+  return (
+    <div className="flex h-screen w-full bg-gray-100 font-sans overflow-hidden">
+      
+      {/* CV CSS STİLLERİ */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        
+        /* Dış Çerçeve (A4 Kağıdı) */
+        .cv-page-wrapper {
+            /* Renk Değişkenleri */
+            --bg-color: #dbeae6;
+            --border-color: #2a3330;
+            --border-width: 1.5px;
+            --border-style: solid;
+            
+            /* Boyut & Boşluk Değişkenleri (Dinamik) */
+            --text-size: 11.5px;
+            --h2-size: 14px;
+            --h1-size: 24px;
+            --title-size: 14px;
+            --pad-cell: 24px 30px;
+            --pad-header: 30px 20px;
+            --pad-footer: 24px 20px 30px 20px;
+            --pad-wrapper: 40px;
+
+            width: 794px;
+            height: 1123px;
+            padding: var(--pad-wrapper); 
+            background-color: var(--bg-color);
+            color: var(--border-color);
+            font-family: var(--font-main, 'Space Mono', monospace);
+            line-height: 1.5;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            margin: 0 auto; 
+            
+            /* EN ÖNEMLİ KISIM: A4'ten taşan kısmı gizler. Footer kayboluyorsa içeriği azaltmak/küçültmek gerektiğini gösterir */
+            overflow: hidden; 
+        }
+
+        .cv-page-wrapper *, .cv-page-wrapper *::before, .cv-page-wrapper *::after {
+            box-sizing: border-box;
+        }
+
+        .cv-document {
+            flex: 1; 
+            border: var(--border-width) var(--border-style) var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cv-row {
+            display: flex;
+            border-bottom: var(--border-width) var(--border-style) var(--border-color);
+            width: 100%;
+        }
+        .cv-row:last-child { border-bottom: none; }
+
+        .cv-header {
+            justify-content: center;
+            align-items: center;
+            padding: var(--pad-header);
+        }
+        .cv-header h1 {
+            font-size: var(--h1-size);
+            font-weight: 700;
+            letter-spacing: 12px;
+            text-transform: uppercase;
+            text-indent: 12px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .cv-vertical-box {
+            width: 55px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .cv-vertical-title {
+            position: absolute;
+            white-space: nowrap;
+            font-size: var(--title-size);
+            font-weight: 700;
+            letter-spacing: 6px;
+            transform: rotate(-90deg);
+        }
+        
+        .cv-teacher-box { border-right: var(--border-width) var(--border-style) var(--border-color); }
+        .cv-teacher-content {
+            flex: 1;
+            padding: var(--pad-cell);
+            font-size: var(--text-size);
+            text-align: justify;
+        }
+
+        .cv-main-row { 
+            flex: 1; 
+            display: flex;
+            align-items: stretch; 
+        }
+        
+        .cv-col-left { 
+            width: 42%; 
+            flex-shrink: 0;
+            display: flex; 
+            flex-direction: column; 
+        }
+        .cv-col-mid {
+            width: 55px;
+            flex-shrink: 0;
+            border-left: var(--border-width) var(--border-style) var(--border-color);
+            border-right: var(--border-width) var(--border-style) var(--border-color);
+        }
+        .cv-col-right { 
+            flex: 1;
+            min-width: 0;
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .cv-cell {
+            padding: var(--pad-cell);
+            border-bottom: var(--border-width) var(--border-style) var(--border-color);
+        }
+        
+        .cv-col-left .cv-cell:last-child, .cv-col-right .cv-cell:last-child {
+            border-bottom: none;
+            flex: 1; 
+        }
+
+        .cv-page-wrapper h2 {
+            font-size: var(--h2-size);
+            font-weight: 700;
+            letter-spacing: 4px;
+            margin-top: 0;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .cv-page-wrapper ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        .cv-page-wrapper li {
+            font-size: var(--text-size);
+            margin-bottom: 12px;
+            text-align: left;
+            position: relative;
+            padding-left: 14px;
+        }
+        .cv-page-wrapper li::before {
+            content: "•";
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .cv-page-wrapper li:last-child { margin-bottom: 0; }
+        
+        .cv-experience-header {
+            font-size: var(--text-size);
+            margin-bottom: 16px;
+        }
+        .cv-experience-header strong {
+            display: block;
+            margin-top: 4px;
+            font-size: var(--title-size);
+            font-weight: 700;
+        }
+
+        .cv-footer {
+            flex-direction: column;
+            align-items: center;
+            padding: var(--pad-footer);
+        }
+        .cv-footer h2 { margin-bottom: 20px; margin-top:0; }
+        .cv-contact-grid {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .cv-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: var(--text-size);
+            text-decoration: none;
+            color: var(--border-color);
+            font-weight: 700;
+        }
+        .cv-contact-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+        .cv-page-wrapper strong { font-weight: 700; }
+      `}</style>
+
+      {/* SOL PANEL: DÜZENLEYİCİ (EDITOR) */}
+      <div className="editor-panel w-[400px] h-full bg-white border-r border-gray-200 shadow-xl z-10 flex flex-col flex-shrink-0">
+        
+        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+          <div className="flex items-center gap-2 text-gray-800">
+            <Edit3 size={20} className="text-teal-600"/>
+            <h2 className="font-bold text-lg">CV Düzenleyici</h2>
+          </div>
+          <button 
+            onClick={handleDownloadPdf}
+            disabled={isGeneratingPdf}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isGeneratingPdf ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-md hover:shadow-lg'}`}
+          >
+            <Printer size={16} />
+            {isGeneratingPdf ? 'PDF Hazırlanıyor...' : 'PDF İndir'}
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-8">
+
+          {/* DÜZEN VE SIĞDIRMA */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Maximize size={14}/> DÜZEN & SIĞDIRMA</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] text-gray-500 uppercase mb-2">Yazı Boyutu</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(TEXT_SIZES).map(([key, size]) => (
+                    <button
+                      key={key}
+                      onClick={() => setActiveSize(key)}
+                      className={`p-2 rounded text-xs border-2 transition-all font-bold`}
+                      style={{ 
+                        backgroundColor: activeSize === key ? '#0d9488' : '#f9fafb',
+                        color: activeSize === key ? 'white' : '#374151',
+                        borderColor: activeSize === key ? '#0d9488' : '#e5e7eb'
+                      }}
+                    >
+                      {size.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] text-gray-500 uppercase mb-2">İç Boşluklar (Margin/Padding)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(SPACING).map(([key, space]) => (
+                    <button
+                      key={key}
+                      onClick={() => setActiveSpacing(key)}
+                      className={`p-2 rounded text-xs border-2 transition-all font-bold`}
+                      style={{ 
+                        backgroundColor: activeSpacing === key ? '#0d9488' : '#f9fafb',
+                        color: activeSpacing === key ? 'white' : '#374151',
+                        borderColor: activeSpacing === key ? '#0d9488' : '#e5e7eb'
+                      }}
+                    >
+                      {space.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* TEMA SEÇİMİ */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Palette size={14}/> TEMA & GÖRÜNÜM</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(THEMES).map(([key, theme]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTheme(key)}
+                  className={`p-2 rounded flex items-center justify-center text-xs font-bold border-2 transition-all hover:scale-105`}
+                  style={{ 
+                    backgroundColor: theme.bg, 
+                    color: theme.border, 
+                    borderColor: activeTheme === key ? theme.border : 'transparent',
+                    boxShadow: activeTheme === key ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                  title={theme.name}
+                >
+                  {theme.name}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* FONT SEÇİMİ */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Type size={14}/> YAZI TİPİ (MONOSPACE)</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(FONTS).map(([key, font]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveFont(key)}
+                  className={`p-2 rounded flex items-center justify-center text-xs border-2 transition-all font-bold`}
+                  style={{ 
+                    fontFamily: font.family,
+                    backgroundColor: activeFont === key ? '#0d9488' : '#f9fafb',
+                    color: activeFont === key ? 'white' : '#374151',
+                    borderColor: activeFont === key ? '#0d9488' : '#e5e7eb'
+                  }}
+                >
+                  {font.name}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* ÇİZGİ STİLİ SEÇİMİ */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Minus size={14}/> ÇİZGİ STİLİ (SEPARATORS)</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(BORDERS).map(([key, border]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveBorderStyle(key)}
+                  className={`p-2 rounded flex flex-col items-center justify-center gap-2 text-xs border-2 transition-all font-bold`}
+                  style={{ 
+                    backgroundColor: activeBorderStyle === key ? '#0d9488' : '#f9fafb',
+                    color: activeBorderStyle === key ? 'white' : '#374151',
+                    borderColor: activeBorderStyle === key ? '#0d9488' : '#e5e7eb'
+                  }}
+                >
+                  <span>{border.name}</span>
+                  <div style={{
+                    width: '80%',
+                    borderBottomStyle: border.value,
+                    borderBottomWidth: border.width,
+                    borderBottomColor: activeBorderStyle === key ? 'white' : '#9ca3af'
+                  }} />
+                </button>
+              ))}
+            </div>
+          </section>
+          
+          {/* Kişisel Bilgiler */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Settings size={14}/> TEMEL BİLGİLER</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Ad Soyad</label>
+                <input type="text" value={data.name} onChange={(e) => handleChange('name', e.target.value)} className="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Sol Dikey Başlık (Örn: TEACHER)</label>
+                <input type="text" value={data.leftTitle} onChange={(e) => handleChange('leftTitle', e.target.value)} className="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Hakkımda / Özet</label>
+                <textarea rows="4" value={data.summary} onChange={(e) => handleChange('summary', e.target.value)} className="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500 resize-none"></textarea>
+              </div>
+            </div>
+          </section>
+
+          {/* Eğitim */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">EĞİTİM (EDUCATION)</h3>
+            <div className="space-y-2">
+              {data.education.map((item, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <textarea rows="2" value={item} onChange={(e) => handleArrayChange('education', idx, e.target.value)} className="flex-1 border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500 resize-none"></textarea>
+                  <button onClick={() => removeFromArray('education', idx)} className="text-red-400 hover:text-red-600 p-2"><Trash2 size={16}/></button>
+                </div>
+              ))}
+              <button onClick={() => addToArray('education')} className="text-teal-600 hover:text-teal-800 text-sm font-medium flex items-center gap-1 mt-2">
+                <Plus size={16}/> Yeni Ekle
+              </button>
+            </div>
+          </section>
+
+          {/* Yetenekler */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">YETENEKLER (SKILLS)</h3>
+            <div className="space-y-2">
+              {data.skills.map((item, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <textarea rows="2" value={item} onChange={(e) => handleArrayChange('skills', idx, e.target.value)} className="flex-1 border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500 resize-none"></textarea>
+                  <button onClick={() => removeFromArray('skills', idx)} className="text-red-400 hover:text-red-600 p-2"><Trash2 size={16}/></button>
+                </div>
+              ))}
+              <button onClick={() => addToArray('skills')} className="text-teal-600 hover:text-teal-800 text-sm font-medium flex items-center gap-1 mt-2">
+                <Plus size={16}/> Yeni Ekle
+              </button>
+            </div>
+          </section>
+
+          {/* Dernek ve Birlikler */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">ÜYELİKLER (AFFILIATIONS)</h3>
+            <div className="space-y-2">
+              {data.affiliations.map((item, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <textarea rows="2" value={item} onChange={(e) => handleArrayChange('affiliations', idx, e.target.value)} className="flex-1 border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500 resize-none"></textarea>
+                  <button onClick={() => removeFromArray('affiliations', idx)} className="text-red-400 hover:text-red-600 p-2"><Trash2 size={16}/></button>
+                </div>
+              ))}
+              <button onClick={() => addToArray('affiliations')} className="text-teal-600 hover:text-teal-800 text-sm font-medium flex items-center gap-1 mt-2">
+                <Plus size={16}/> Yeni Ekle
+              </button>
+            </div>
+          </section>
+
+          {/* Deneyimler */}
+          <section>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">DENEYİM (EXPERIENCE)</h3>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-2">Orta Dikey Başlık</label>
+              <input type="text" value={data.midTitle} onChange={(e) => handleChange('midTitle', e.target.value)} className="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500 mb-4" />
+            </div>
+            
+            <div className="space-y-6">
+              {data.experiences.map((exp, expIdx) => (
+                <div key={expIdx} className="bg-gray-50 border border-gray-200 p-4 rounded-lg relative">
+                  <button onClick={() => removeExperienceBlock(expIdx)} className="absolute top-3 right-3 text-red-400 hover:text-red-600"><Trash2 size={16}/></button>
+                  
+                  <div className="space-y-3 pr-6">
+                    <div>
+                      <label className="block text-[10px] text-gray-500 uppercase mb-1">Tarih</label>
+                      <input type="text" value={exp.date} onChange={(e) => handleExpChange(expIdx, 'date', e.target.value)} placeholder="Örn: 2018 - Present" className="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-gray-500 uppercase mb-1">Kurum / Pozisyon</label>
+                      <input type="text" value={exp.company} onChange={(e) => handleExpChange(expIdx, 'company', e.target.value)} placeholder="Örn: BAHÇEŞEHİR UNIVERSITY" className="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500" />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-[10px] text-gray-500 uppercase mb-2">Maddeler (Kalın yapmak için **kelime** kullanın)</label>
+                      <div className="space-y-2">
+                        {exp.items.map((item, itemIdx) => (
+                          <div key={itemIdx} className="flex gap-2">
+                             <textarea rows="2" value={item} onChange={(e) => handleExpItemChange(expIdx, itemIdx, e.target.value)} className="flex-1 border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500 resize-none"></textarea>
+                             <button onClick={() => removeExpItem(expIdx, itemIdx)} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14}/></button>
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => addExpItem(expIdx)} className="text-teal-600 hover:text-teal-800 text-xs font-medium flex items-center gap-1 mt-2">
+                        <Plus size={14}/> Madde Ekle
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <button onClick={addExperienceBlock} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 rounded-lg flex justify-center items-center gap-2 text-sm transition-colors">
+                <Plus size={16}/> Yeni Deneyim Bloğu Ekle
+              </button>
+            </div>
+          </section>
+
+          {/* İlgi Alanları */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">İLİG ALANLARI (INTERESTS)</h3>
+            <div className="space-y-2">
+              {data.interests.map((item, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <input type="text" value={item} onChange={(e) => handleArrayChange('interests', idx, e.target.value)} className="flex-1 border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500" />
+                  <button onClick={() => removeFromArray('interests', idx)} className="text-red-400 hover:text-red-600 p-2"><Trash2 size={16}/></button>
+                </div>
+              ))}
+              <button onClick={() => addToArray('interests')} className="text-teal-600 hover:text-teal-800 text-sm font-medium flex items-center gap-1 mt-2">
+                <Plus size={16}/> Yeni Ekle
+              </button>
+            </div>
+          </section>
+
+          {/* İletişim */}
+          <section className="pb-10">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">İLETİŞİM (CONTACT)</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Telefon</label>
+                <input type="text" value={data.contact.phone} onChange={(e) => handleNestedChange('contact', 'phone', e.target.value)} className="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">E-Posta</label>
+                <input type="text" value={data.contact.email} onChange={(e) => handleNestedChange('contact', 'email', e.target.value)} className="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Web Sitesi</label>
+                <input type="text" value={data.contact.website} onChange={(e) => handleNestedChange('contact', 'website', e.target.value)} className="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-teal-500" />
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      {/* SAĞ PANEL: CV ÖNİZLEME (PREVIEW) */}
+      <div className="preview-panel flex-1 h-full overflow-y-auto bg-[#cddad7] py-10 px-4 flex justify-center items-start">
+        
+        {/* SABİT A4 KAĞIDI ALANI */}
+        <div 
+          id="pdf-content"
+          className="cv-page-wrapper shadow-2xl transition-all duration-300"
+          style={{
+            '--bg-color': THEMES[activeTheme].bg,
+            '--border-color': THEMES[activeTheme].border,
+            '--font-main': FONTS[activeFont].family,
+            '--border-style': BORDERS[activeBorderStyle].value,
+            '--border-width': BORDERS[activeBorderStyle].width,
+            '--text-size': TEXT_SIZES[activeSize].text,
+            '--h2-size': TEXT_SIZES[activeSize].h2,
+            '--h1-size': TEXT_SIZES[activeSize].h1,
+            '--title-size': TEXT_SIZES[activeSize].title,
+            '--pad-cell': SPACING[activeSpacing].cell,
+            '--pad-header': SPACING[activeSpacing].header,
+            '--pad-footer': SPACING[activeSpacing].footer,
+            '--pad-wrapper': SPACING[activeSpacing].wrapper,
+          }}
+        >
+          {/* SİYAH İÇ ÇERÇEVE */}
+          <div className="cv-document">
+              
+              {/* BAŞLIK */}
+              <div className="cv-row cv-header">
+                  <h1>{data.name}</h1>
+              </div>
+
+              {/* TEACHER KISMI */}
+              <div className="cv-row" style={{ minHeight: '140px' }}>
+                  <div className="cv-vertical-box cv-teacher-box">
+                      <span className="cv-vertical-title">{data.leftTitle}</span>
+                  </div>
+                  <div className="cv-teacher-content">
+                      {data.summary}
+                  </div>
+              </div>
+
+              {/* ANA İÇERİK (3 KOLON) */}
+              <div className="cv-row cv-main-row">
+                  
+                  {/* Sol Kolon */}
+                  <div className="cv-col-left">
+                      <div className="cv-cell">
+                          <h2>EDUCATION</h2>
+                          <ul>
+                              {data.education.map((item, i) => (
+                                  <li key={`edu-${i}`}>{renderFormattedText(item)}</li>
+                              ))}
+                          </ul>
+                      </div>
+                      
+                      <div className="cv-cell">
+                          <h2>SKILLS</h2>
+                          <ul>
+                              {data.skills.map((item, i) => (
+                                  <li key={`skill-${i}`}>{renderFormattedText(item)}</li>
+                              ))}
+                          </ul>
+                      </div>
+                      
+                      <div className="cv-cell">
+                          <h2>PROFESSIONAL AFFILIATIONS & RECOGNITION</h2>
+                          <ul>
+                              {data.affiliations.map((item, i) => (
+                                  <li key={`aff-${i}`}>{renderFormattedText(item)}</li>
+                              ))}
+                          </ul>
+                      </div>
+                  </div>
+
+                  {/* Orta Kolon (Dikey Çizgili Başlık) */}
+                  <div className="cv-vertical-box cv-col-mid">
+                      <span className="cv-vertical-title">{data.midTitle}</span>
+                  </div>
+
+                  {/* Sağ Kolon */}
+                  <div className="cv-col-right">
+                      
+                      {data.experiences.map((exp, idx) => (
+                          <div key={`exp-${idx}`} className="cv-cell">
+                              <div className="cv-experience-header">
+                                  {exp.date}
+                                  <strong>{exp.company}</strong>
+                              </div>
+                              <ul>
+                                  {exp.items.map((item, i) => (
+                                      <li key={`expitem-${i}`}>{renderFormattedText(item)}</li>
+                                  ))}
+                              </ul>
+                          </div>
+                      ))}
+                      
+                      <div className="cv-cell">
+                          <h2>INTERESTS</h2>
+                          <ul>
+                              {data.interests.map((item, i) => (
+                                  <li key={`int-${i}`}>{renderFormattedText(item)}</li>
+                              ))}
+                          </ul>
+                      </div>
+                  </div>
+                  
+              </div>
+
+              {/* İLETİŞİM KISMI */}
+              <div className="cv-row cv-footer">
+                  <h2>CONTACT</h2>
+                  <div className="cv-contact-grid">
+                      <span className="cv-contact-item">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                          {data.contact.phone}
+                      </span>
+                      <span className="cv-contact-item">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                          {data.contact.email}
+                      </span>
+                      <span className="cv-contact-item">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                          {data.contact.website}
+                      </span>
+                  </div>
+              </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
