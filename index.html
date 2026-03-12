@@ -109,11 +109,6 @@
           lg: { name: 'Büyük', text: '12.5px', h2: '15px', h1: '28px', title: '16px' }
         };
 
-        const SPACING = {
-          compact: { name: 'Dar (Kompakt)', cell: '16px 20px', header: '20px 10px', footer: '16px 20px', wrapper: '20px' },
-          normal: { name: 'Geniş (Ferah)', cell: '24px 30px', header: '30px 20px', footer: '24px 20px 30px 20px', wrapper: '40px' }
-        };
-
         // --- ANA UYGULAMA BİLEŞENİ ---
         function App() {
           const [data, setData] = useState(initialData);
@@ -121,7 +116,6 @@
           const [activeFont, setActiveFont] = useState('space-mono');
           const [activeBorderStyle, setActiveBorderStyle] = useState('solid');
           const [activeSize, setActiveSize] = useState('md');
-          const [activeSpacing, setActiveSpacing] = useState('normal');
           const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
           const handleChange = (field, value) => setData({ ...data, [field]: value });
@@ -214,10 +208,10 @@
                     --h2-size: 14px;
                     --h1-size: 24px;
                     --title-size: 14px;
-                    --pad-cell: 24px 30px;
-                    --pad-header: 30px 20px;
-                    --pad-footer: 24px 20px 30px 20px;
-                    --pad-wrapper: 40px;
+                    --pad-cell: 16px 20px;
+                    --pad-header: 20px 10px;
+                    --pad-footer: 16px 20px;
+                    --pad-wrapper: 20px;
 
                     width: 794px;
                     height: 1123px;
@@ -286,14 +280,6 @@
                         <div className="grid grid-cols-3 gap-2">
                           {Object.entries(TEXT_SIZES).map(([key, size]) => (
                             <button key={key} onClick={() => setActiveSize(key)} className="p-2 rounded text-xs border-2 transition-all font-bold" style={{ backgroundColor: activeSize === key ? '#0d9488' : '#f9fafb', color: activeSize === key ? 'white' : '#374151', borderColor: activeSize === key ? '#0d9488' : '#e5e7eb' }}>{size.name}</button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] text-gray-500 uppercase mb-2">İç Boşluklar</label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {Object.entries(SPACING).map(([key, space]) => (
-                            <button key={key} onClick={() => setActiveSpacing(key)} className="p-2 rounded text-xs border-2 transition-all font-bold" style={{ backgroundColor: activeSpacing === key ? '#0d9488' : '#f9fafb', color: activeSpacing === key ? 'white' : '#374151', borderColor: activeSpacing === key ? '#0d9488' : '#e5e7eb' }}>{space.name}</button>
                           ))}
                         </div>
                       </div>
@@ -450,10 +436,6 @@
                     '--h2-size': TEXT_SIZES[activeSize].h2,
                     '--h1-size': TEXT_SIZES[activeSize].h1,
                     '--title-size': TEXT_SIZES[activeSize].title,
-                    '--pad-cell': SPACING[activeSpacing].cell,
-                    '--pad-header': SPACING[activeSpacing].header,
-                    '--pad-footer': SPACING[activeSpacing].footer,
-                    '--pad-wrapper': SPACING[activeSpacing].wrapper,
                   }}
                 >
                   <div className="cv-document">
